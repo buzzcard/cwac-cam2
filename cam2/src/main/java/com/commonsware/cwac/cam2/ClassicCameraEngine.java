@@ -47,6 +47,8 @@ public class ClassicCameraEngine extends CameraEngine
   private int previewWidth, previewHeight;
   private int previewFormat;
 
+  private boolean isZooming = false;
+
   public ClassicCameraEngine(Context ctxt) {
     this.ctxt=ctxt.getApplicationContext();
   }
@@ -425,18 +427,110 @@ public class ClassicCameraEngine extends CameraEngine
     Camera.Parameters params=camera.getParameters();
     int zoom=zoomLevel*params.getMaxZoom()/100;
     boolean result=false;
-
     if (params.isSmoothZoomSupported()) {
       camera.setZoomChangeListener(this);
       camera.startSmoothZoom(zoom);
-      result=true;
-    }
-    else if (params.isZoomSupported()) {
+      result = true;
+    } else if (params.isZoomSupported()) {
       params.setZoom(zoom);
       camera.setParameters(params);
     }
 
     return(result);
+  }
+
+  @Override
+  public boolean startZoom(final CameraSession session, HardwareZoomDirection direction) {
+    if(isZooming) {
+      return false;
+    }
+
+    Descriptor descriptor = (Descriptor) session.getDescriptor();
+    Camera camera = descriptor.getCamera();
+    Camera.Parameters params = camera.getParameters();
+
+    final int currentZoomLevel = getCurrentZoomLevel(params);
+    final int desiredZoomLevel = direction == HardwareZoomDirection.ZOOM_IN
+            ? 100
+            : 1;
+
+    if (params.isSmoothZoomSupported()) {
+      int cameraZoom = desiredZoomLevel * params.getMaxZoom() / 100;
+      camera.setZoomChangeListener(this);
+      camera.startSmoothZoom(cameraZoom);
+      isZooming = true;
+    } else if (params.get("zoom-action") != null) { // Samsung Galaxy S4 Camera, Samsung Galaxy Camera 2, etc.
+      if (desiredZoomLevel > currentZoomLevel) {
+        params.set("zoom-action", "optical-tele-start");
+      } else {
+        params.set("zoom-action", "optical-wide-start");
+      }
+      camera.setParameters(params);
+      isZooming = true;
+    } else if (params.isZoomSupported()) {
+      getThreadPool().execute(new Runnable() {
+        @Override
+        public void run() {
+          startManualSmoothZoom(session, desiredZoomLevel, currentZoomLevel);
+        }
+      });
+      isZooming = true;
+    }
+
+    return (isZooming);
+  }
+
+  private static int getCurrentZoomLevel(Camera.Parameters params) {
+    int zoom = params.getZoom();
+
+    // Samsung devices with optical zoom such as Samsung Galaxy Camera 2, Galaxy S4 zoom, etc
+    // do not report zoom level using .getZoom() but require us to check curr_zoom_level
+    if (zoom == 0 && params.get("curr_zoom_level") != null) {
+      zoom = params.getInt("curr_zoom_level");
+    }
+
+    return Math.round((zoom * 100.0f) / params.getMaxZoom());
+  }
+
+  @Override
+  public int stopZoom(CameraSession session) {
+    Descriptor descriptor=(Descriptor)session.getDescriptor();
+    Camera camera=descriptor.getCamera();
+    Camera.Parameters params=camera.getParameters();
+
+    if (params.isSmoothZoomSupported()) {
+      camera.stopSmoothZoom();
+      isZooming = false;
+    } else if (params.get("zoom-action") != null) { // Samsung Galaxy S4 Camera, Samsung Galaxy Camera 2, etc.
+      params.set("zoom-action", "zoom-stop");
+      camera.setParameters(params);
+      isZooming = false;
+    } else if (params.isZoomSupported()) {
+      isZooming = false;
+    }
+
+    return getCurrentZoomLevel(params);
+  }
+
+  private void startManualSmoothZoom(CameraSession session, int zoomLevel, int startPosition) {
+    isZooming = true;
+
+    int distance = (zoomLevel < startPosition)
+            ? startPosition - zoomLevel //zooming out
+            : zoomLevel - startPosition;
+
+    for(int i = 0; i < distance; i++) {
+      if (!isZooming)
+        return;
+
+      int newZoom = (zoomLevel < startPosition)
+        ? startPosition - i
+        : startPosition + i;
+
+      zoomTo(session, newZoom);
+    }
+
+    isZooming = false;
   }
 
   @Override
@@ -465,6 +559,7 @@ public class ClassicCameraEngine extends CameraEngine
           getBus().post(new PictureTakenEvent(xact,
             xact.process(new ImageContext(ctxt, bytes))));
         }
+
       });
     }
   }

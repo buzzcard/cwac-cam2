@@ -387,6 +387,29 @@ public class CameraTwoEngine extends CameraEngine {
     return(false);
   }
 
+  @Override
+  public boolean startZoom(CameraSession session, HardwareZoomDirection direction) {
+    int zoomTo = direction == HardwareZoomDirection.ZOOM_IN
+            ? 100 // zoom in
+            : 1; // zoom out
+    return zoomTo(session, zoomTo);
+  }
+
+  @Override
+  public int stopZoom(CameraSession session) {
+    final Session s = (Session) session;
+
+    if (s.previewRequest != null) {
+      try {
+        s.captureSession.stopRepeating();
+      } catch (CameraAccessException e) {
+        getBus().post(new DeepImpactEvent(e));
+      }
+    }
+
+    return 0; //stub
+  }
+
   @TargetApi(Build.VERSION_CODES.LOLLIPOP)
   private static Rect cropRegionForZoom(CameraCharacteristics cc,
                                         float zoomTo) {

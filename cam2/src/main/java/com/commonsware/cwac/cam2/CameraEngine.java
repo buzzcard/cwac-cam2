@@ -52,6 +52,11 @@ abstract public class CameraEngine {
     CAMERA2
   }
 
+  public enum HardwareZoomDirection {
+    ZOOM_IN,
+    ZOOM_OUT
+  }
+
   private static class CrashableEvent {
     /**
      * The exception that was raised when trying to process
@@ -328,6 +333,24 @@ abstract public class CameraEngine {
   abstract public boolean zoomTo(CameraSession session,
                                    int zoomLevel);
 
+  /**
+   *
+   * Starts the camera zoom in. Either uses smooth zoom or simulated smooth zoom.
+   *
+   * @param session the session for the camera of interest.
+   * @param direction HardwareZoomDirection.ZOOM_IN or HardwareZoomDirection.ZOOM_OUT.
+   * @return true if "smooth zoom" (and should not request
+   * zoom until complete), false otherwise
+   * */
+  abstract public boolean startZoom(CameraSession session, HardwareZoomDirection direction);
+
+  /**
+   * Stops the existing zoom for the camera session passed in.
+   *
+   * @param session the session for the camera of interest.
+   * @return the new zoom level as a percentage 0-100.
+     */
+  abstract public int stopZoom(CameraSession session);
   /**
    * Builds a CameraEngine instance based on the device's
    * API level.

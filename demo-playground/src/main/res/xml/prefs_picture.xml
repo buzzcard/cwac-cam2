@@ -19,6 +19,9 @@
     android:key="confirm"
     android:title="@string/title_confirm"/>
   <SwitchPreference
+      android:key="hardware_zoom"
+      android:title="@string/title_hardware_zoom"/>
+  <SwitchPreference
     android:key="debug"
     android:title="@string/title_debug"/>
   <SwitchPreference

@@ -266,6 +266,14 @@ public class CameraController implements CameraView.StateCallback {
     return(handleZoom());
   }
 
+  public boolean startZoom(CameraEngine.HardwareZoomDirection direction) {
+    return engine.startZoom(session, direction);
+  }
+
+  public void stopZoom() {
+    zoomLevel = engine.stopZoom(session);
+  }
+
   private boolean handleZoom() {
     if (zoomLevel<0) {
       zoomLevel=0;

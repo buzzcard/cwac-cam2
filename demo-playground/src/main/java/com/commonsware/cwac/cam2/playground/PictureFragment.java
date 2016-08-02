@@ -90,6 +90,10 @@ public class PictureFragment extends PreferenceFragment {
       b.skipConfirm();
     }
 
+    if (prefs.getBoolean("hardware_zoom", false)) {
+      b.useHardwareZoom();
+    }
+
     if (prefs.getBoolean("ffc", false)) {
       b.facing(Facing.FRONT);
     }

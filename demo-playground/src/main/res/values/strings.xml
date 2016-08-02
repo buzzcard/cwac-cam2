@@ -7,6 +7,7 @@
 	<string name="title_file">Save full image to file</string>
 	<string name="summary_file">If off, captures a thumbnail instead</string>
 	<string name="title_confirm">Show confirmation screen</string>
+	<string name="title_hardware_zoom">Use hardware zoom buttons</string>
 	<string name="title_debug">Enable debug mode</string>
 	<string name="take_picture">Take picture</string>
 	<string name="title_update_media_store">Update MediaStore</string>

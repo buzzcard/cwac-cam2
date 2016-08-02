@@ -19,6 +19,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.view.KeyEvent;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +40,13 @@ public class CameraActivity extends AbstractCameraActivity
    * to true, meaning that the user should confirm the picture.
    */
   public static final String EXTRA_CONFIRM="cwac_cam2_confirm";
+
+  /**
+   * Extra name for whether hardware keys such as
+   * ZOOM_IN, ZOOM_OUT, VOLUME_UP and VOLUME_DOWN can
+   * be used to change zoom.
+   */
+  public static final String EXTRA_HARDWARE_ZOOM="cwac_cam2_hardware_zoom";
 
   /**
    * Extra name for whether a preview frame should be saved
@@ -113,6 +122,35 @@ public class CameraActivity extends AbstractCameraActivity
           .show(cameraFrag)
           .commit();
     }
+  }
+
+  @Override
+  public boolean onKeyDown(int keyCode, KeyEvent event) {
+    if (getIntent().getExtras().getBoolean(EXTRA_HARDWARE_ZOOM, false)) {
+      if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_ZOOM_IN) {
+        cameraFrag.getController().startZoom(CameraEngine.HardwareZoomDirection.ZOOM_IN);
+        return true;
+      }
+
+      if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_ZOOM_OUT) {
+        cameraFrag.getController().startZoom(CameraEngine.HardwareZoomDirection.ZOOM_OUT);
+        return true;
+      }
+    }
+
+    return super.onKeyDown(keyCode, event);
+  }
+
+  @Override
+  public boolean onKeyUp(int keyCode, KeyEvent event) {
+    if (getIntent().getExtras().getBoolean(EXTRA_HARDWARE_ZOOM, false)) {
+      if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_ZOOM_IN || keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_ZOOM_OUT) {
+        cameraFrag.getController().stopZoom();
+        return true;
+      }
+    }
+
+    return super.onKeyUp(keyCode, event);
   }
 
   @SuppressWarnings("unused")
@@ -271,6 +309,18 @@ public class CameraActivity extends AbstractCameraActivity
      */
     public IntentBuilder skipConfirm() {
       result.putExtra(EXTRA_CONFIRM, false);
+
+      return(this);
+    }
+
+    /**
+     * Call to enable use for hardware keys to control zoom
+     * of the camera.
+     *
+     * @return the builder, for further configuration
+     */
+    public IntentBuilder useHardwareZoom() {
+      result.putExtra(EXTRA_HARDWARE_ZOOM, true);
 
       return(this);
     }
