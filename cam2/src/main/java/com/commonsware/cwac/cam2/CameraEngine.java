@@ -291,6 +291,15 @@ abstract public class CameraEngine {
   abstract public void close(CameraSession session);
 
   /**
+   * Stop preview from the previous camera.
+   *
+   * Used for orientation changes instead of reinitialising the camera using close.
+   *
+   * @param session the session for the camera of interest
+     */
+  abstract public void pause(CameraSession session);
+
+  /**
    * Take a picture, on the supplied camera, using the picture
    * configuration from the supplied transaction. Posts a
    * PictureTakenEvent when the request is completed, successfully

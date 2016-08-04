@@ -186,7 +186,7 @@ public class CameraFragment extends Fragment {
   public void onStop() {
     if (ctlr!=null) {
       try {
-        ctlr.stop();
+        ctlr.pause();
       }
       catch (Exception e) {
         ctlr.postError(ErrorConstants.ERROR_STOPPING, e);

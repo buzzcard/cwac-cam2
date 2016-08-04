@@ -142,6 +142,19 @@ public class ClassicCameraEngine extends CameraEngine
    * {@inheritDoc}
    */
   @Override
+  public void pause(final CameraSession session) {
+    Descriptor descriptor=(Descriptor)session.getDescriptor();
+    Camera camera=descriptor.getCamera();
+
+    if (camera != null) {
+      camera.stopPreview();
+    }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public void close(final CameraSession session) {
     Descriptor descriptor=(Descriptor)session.getDescriptor();
     Camera camera=descriptor.getCamera();

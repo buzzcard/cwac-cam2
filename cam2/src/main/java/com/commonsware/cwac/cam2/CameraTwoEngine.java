@@ -236,6 +236,14 @@ public class CameraTwoEngine extends CameraEngine {
    * {@inheritDoc}
    */
   @Override
+  public void pause(final CameraSession session) {
+    close(session);
+  }
+
+    /**
+     * {@inheritDoc}
+     */
+  @Override
   public void close(final CameraSession session) {
     final Session s=(Session)session;
 

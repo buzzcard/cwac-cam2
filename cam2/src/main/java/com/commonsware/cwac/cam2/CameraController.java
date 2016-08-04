@@ -129,6 +129,14 @@ public class CameraController implements CameraView.StateCallback {
     }
   }
 
+  public void pause() throws Exception {
+    if (session!=null) {
+      stopVideoRecording(true);
+
+      engine.pause(session);
+    }
+  }
+
   /**
    * Call this from onDestroy() of an activity or fragment,
    * or from an equivalent point in time, to tear down the
@@ -194,7 +202,7 @@ public class CameraController implements CameraView.StateCallback {
    */
   @Override
   public void onDestroyed(CameraView cv) throws Exception {
-    stop();
+    pause();
   }
 
   /**
